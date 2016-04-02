@@ -104,7 +104,7 @@ head(activity_summarized)
 Generating the historgram (although the sums are for each day, the days itself are not represented in the figure, only the distribution of the sums).
 
 ```r
-hist(activity_summarized$SumSteps, main = "Histogram of the total number of steps taken each day\n(NAs not treated)", xlab = "Total steps per day", col = "blue", ylim = c(0,40))
+hist(activity_summarized$SumSteps, main = "Total number of steps taken each day\n(NAs not treated)", xlab = "Total steps per day", col = "blue", ylim = c(0,40))
 ```
 
 <img src="PA1_template_files/figure-html/unnamed-chunk-4-1.png" title="" alt="" width="672" />
@@ -116,7 +116,7 @@ dev.copy(png, file = "figure/Total_number_steps_with_NA.png")
 
 ```
 ## png 
-##   5
+##   3
 ```
 
 ```r
@@ -124,8 +124,8 @@ dev.off()
 ```
 
 ```
-## RStudioGD 
-##         2
+## png 
+##   2
 ```
 
 ## Mean and median number of steps taken each day  
@@ -157,39 +157,28 @@ activity_summarized
 ```
 A lot of strange "0" as median values for the number of steps compared to the non-null means suggest, more than the half of time intervals were lazy.
 
-## Time series plot of the average number of steps taken
-
-Making a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+##Time series plot of the average number of steps taken or What is the average daily activity pattern?
 
 ```r
-plot( y = activity$steps, x = seq(along = activity$steps), type="l", main = "Time series plot of steps in the 5-minute intervalls",lty= 1, xlab = "Time intervals of 5 min.", ylab = "Number of steps")
-abline(h = mean(activity$steps, na.rm = TRUE), lwd = 2, col = "red")
-legend("topright", legend = "Steps taken, avg. all days", lty = 1, col = "red" )
+activity_summarized_interval <- aggregate(steps ~ interval, activity, mean)    
+plot(x = activity_summarized_interval$interval, y = activity_summarized_interval$steps, type="l", xlab = "Interval", ylab = "Number of steps, avg." , main = "Average daily activity pattern", lwd = 2, col = "red")
 ```
 
 <img src="PA1_template_files/figure-html/unnamed-chunk-6-1.png" title="" alt="" width="672" />
 
+
 ## The 5-minute interval that, on average, contains the maximum number of steps
 
+
 ```r
-day <- activity$date[which.max(activity$steps)]
-hours <- as.integer(activity$interval[which.max(activity$steps)]/60)
-minutes <- activity$interval[which.max(activity$steps)]%%60
-print(paste("Start:",strptime(paste(day,hours,minutes), "%Y-%m-%d %H %M"),tz="UTC"));print(paste("End:",strptime(paste(day,hours,minutes+4,59), "%Y-%m-%d %H %M %S"), tz="UTC"));print(paste("Max. number of steps:", max(activity$steps, na.rm = TRUE)))
+with(activity_summarized_interval,interval[which.max(steps)])
 ```
 
 ```
-## [1] "Start: 2012-11-27 10:15:00 UTC"
+## [1] 835
 ```
+So, the time of the peak activity is on average about 8:35 AM
 
-```
-## [1] "End: 2012-11-27 10:19:59 UTC"
-```
-
-```
-## [1] "Max. number of steps: 806"
-```
- 
 ## Code to describe and show a strategy for imputing missing data
 
 ###Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
@@ -287,7 +276,7 @@ activity_summarized
 ```
 
 ```r
-hist(activity_summarized$SumSteps, main = "Histogram of the total number of steps taken each day\n(NAs substituted with means across an interval)", xlab = "Total steps per day", col = "blue", ylim = c(0,40))  
+hist(activity_summarized$SumSteps, main = "Total number of steps taken each day\n(NAs substituted with means across an interval)", xlab = "Total steps per day", col = "blue", ylim = c(0,40))  
 ```
 
 <img src="PA1_template_files/figure-html/unnamed-chunk-11-1.png" title="" alt="" width="672" />
@@ -321,18 +310,22 @@ activity_summarized_before
 
 ##What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-The peak interval of 10000 to 15000 steps per day has been enhanced throug the imputing missing data.
+The peak interval of 10000 to 15000 steps per day has been enhanced through the imputing missing data.
 
 ## Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
 
 
 ```r
-activity_completed$weekend <- as.factor("weekday")
+activity_completed$weekend <- "weekday"
 #Dont worry, pattern "So" is for german "Sonntag" (Sunday)
 weekendindx <- grep("Su|Sa|So",weekdays(activity_completed$date, abbreviate = TRUE))
-activity_completed[weekendindx]$weekend <- as.factor("weekend")
+activity_completed[weekendindx,]$weekend <- "weekend"
+activity_summarized <- aggregate(activity_completed$steps, by = list(activity_completed$weekend , activity_completed$interval), mean)
+
 library(lattice)
-xyplot(activity_completed$steps ~  seq(along = activity_completed$interval)| activity_completed$weekend, data = activity_completed, type = "l", layout = c(1, 2), lty=1, xlab = "Interval", ylab = "Number of steps")
+xyplot(x ~  Group.2| Group.1, data = activity_summarized, type = "l", layout = c(1, 2), lty=1, xlab = "Interval", ylab = "Number of steps")
 ```
 
 <img src="PA1_template_files/figure-html/unnamed-chunk-13-1.png" title="" alt="" width="672" />
+  
+The daily pattern on weekends looks more uniform than  on weekdays (definite  morning peaks).
