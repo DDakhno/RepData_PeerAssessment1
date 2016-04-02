@@ -1,0 +1,25 @@
+#######################################################################
+#This is a README file dealing with the actual structure of the 
+#Course Project directory.
+#Created by D.Dakhno
+#######################################################################
+
+Due to version incompatibility of R Markdown v2 the files commited (.Rmd, .md., .html) had to be processed and generated in a way, different from that proposed in assignment (so, not with knit2html(), but either within of RStudio or with rmarkdown::render(..., clear = FALSE)).
+
+RStudio(Version 0.99.491) in combination with R (version 3.2.3) leaves 
+no intermediate .md-files after generating the html-version.
+
+To meet the requirements of the assignment I included both versions of each generated file. Here the way to distinguisch them:
+-----------------------------------------------------------------------
+File                    |       Origin
+-----------------------------------------------------------------------
+PA1_template.Rmd        |       Written in RStudio  
+PA1_template.html       |       Generated through RStudio
+PA1_template.knit.html  |       Generated through rmarkdown::render()
+PA1_template.knit.md    |       Generated through rmarkdown::render()
+PA1_template.utf8.md    |       Generated through rmarkdown::render()
+PA1_template_files      |       Generated through rmarkdown::render()
+README                  |       This file
+README.html             |       Generated through RStudio from original README.md               |       Original README.md
+-----------------------------------------------------------------------                     
+                                

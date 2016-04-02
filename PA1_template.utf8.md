@@ -25,7 +25,8 @@ The following chunk of code ensure the file with activity records is available
  (if yet not here) and the activity data are read into the 
 data table for further analysis
 
-```{r, echo = TRUE}
+
+```r
 if (!file.exists("activity.csv")) {
      if (!file.exists("activity.zip")) {
          fil <- download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip", destfile = "activity.zip", mode = "wb")
@@ -38,67 +39,175 @@ if(!dir.exists("figure")) dir.create("figure")
 library(data.table)
 activity <- data.table(read.csv("activity.csv",colClasses = c("numeric","Date","numeric")))
 ```
-```{r, echo = TRUE}
+
+```r
 head(activity)
+```
+
+```
+##    steps       date interval
+## 1:    NA 2012-10-01        0
+## 2:    NA 2012-10-01        5
+## 3:    NA 2012-10-01       10
+## 4:    NA 2012-10-01       15
+## 5:    NA 2012-10-01       20
+## 6:    NA 2012-10-01       25
+```
+
+```r
 summary(activity)
+```
+
+```
+##      steps             date               interval     
+##  Min.   :  0.00   Min.   :2012-10-01   Min.   :   0.0  
+##  1st Qu.:  0.00   1st Qu.:2012-10-16   1st Qu.: 588.8  
+##  Median :  0.00   Median :2012-10-31   Median :1177.5  
+##  Mean   : 37.38   Mean   :2012-10-31   Mean   :1177.5  
+##  3rd Qu.: 12.00   3rd Qu.:2012-11-15   3rd Qu.:1766.2  
+##  Max.   :806.00   Max.   :2012-11-30   Max.   :2355.0  
+##  NA's   :2304
+```
+
+```r
 str(activity)
-```  
+```
+
+```
+## Classes 'data.table' and 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : num  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: num  0 5 10 15 20 25 30 35 40 45 ...
+##  - attr(*, ".internal.selfref")=<externalptr>
+```
 So, about a sixth part of step measurements is not available in the data set.  
 
 ## Histogram of the total number of steps taken each day
 First we are summarizing the data by date for the following steps.
 
-```{r, echo = TRUE}
+
+```r
 library(dplyr, verbose = FALSE, quietly = TRUE)
 activity_summarized <- activity%>%group_by(date)%>%summarize(SumSteps = sum(steps), MeanSteps = mean(steps), MedianSteps = median(steps))
 head(activity_summarized)
 ```
+
+```
+##         date SumSteps MeanSteps MedianSteps
+## 1 2012-10-01       NA        NA          NA
+## 2 2012-10-02      126   0.43750           0
+## 3 2012-10-03    11352  39.41667           0
+## 4 2012-10-04    12116  42.06944           0
+## 5 2012-10-05    13294  46.15972           0
+## 6 2012-10-06    15420  53.54167           0
+```
 Generating the historgram (although the sums are for each day, the days itself are not represented in the figure, only the distribution of the sums).
-```{r, echo = TRUE}
+
+```r
 hist(activity_summarized$SumSteps, main = "Histogram of the total number of steps taken each day\n(NAs not treated)", xlab = "Total steps per day", col = "blue", ylim = c(0,40))
+```
+
+<img src="PA1_template_files/figure-html/unnamed-chunk-4-1.png" title="" alt="" width="672" />
+
+```r
 #Saving the figure for further recycling
 dev.copy(png, file = "figure/Total_number_steps_with_NA.png")
+```
+
+```
+## png 
+##   5
+```
+
+```r
 dev.off()
+```
+
+```
+## RStudioGD 
+##         2
 ```
 
 ## Mean and median number of steps taken each day  
 Using the before summarized data print the mean and median number of steps taken each day
-```{r, echo = TRUE}
+
+```r
 #For  comparisons in future...
 activity_summarized_before <- copy(activity_summarized)
 activity_summarized$SumSteps <- NULL
 activity_summarized
+```
+
+```
+## Source: local data table [61 x 3]
+## 
+##          date MeanSteps MedianSteps
+##        (date)     (dbl)       (dbl)
+## 1  2012-10-01        NA          NA
+## 2  2012-10-02   0.43750           0
+## 3  2012-10-03  39.41667           0
+## 4  2012-10-04  42.06944           0
+## 5  2012-10-05  46.15972           0
+## 6  2012-10-06  53.54167           0
+## 7  2012-10-07  38.24653           0
+## 8  2012-10-08        NA          NA
+## 9  2012-10-09  44.48264           0
+## 10 2012-10-10  34.37500           0
+## ..        ...       ...         ...
 ```
 A lot of strange "0" as median values for the number of steps compared to the non-null means suggest, more than the half of time intervals were lazy.
 
 ## Time series plot of the average number of steps taken
 
 Making a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
-```{r, echo = TRUE}
+
+```r
 plot( y = activity$steps, x = seq(along = activity$steps), type="l", main = "Time series plot of steps in the 5-minute intervalls",lty= 1, xlab = "Time intervals of 5 min.", ylab = "Number of steps")
 abline(h = mean(activity$steps, na.rm = TRUE), lwd = 2, col = "red")
 legend("topright", legend = "Steps taken, avg. all days", lty = 1, col = "red" )
- ```
+```
+
+<img src="PA1_template_files/figure-html/unnamed-chunk-6-1.png" title="" alt="" width="672" />
 
 ## The 5-minute interval that, on average, contains the maximum number of steps
-```{r, echo = TRUE}
+
+```r
 day <- activity$date[which.max(activity$steps)]
 hours <- as.integer(activity$interval[which.max(activity$steps)]/60)
 minutes <- activity$interval[which.max(activity$steps)]%%60
 print(paste("Start:",strptime(paste(day,hours,minutes), "%Y-%m-%d %H %M"),tz="UTC"));print(paste("End:",strptime(paste(day,hours,minutes+4,59), "%Y-%m-%d %H %M %S"), tz="UTC"));print(paste("Max. number of steps:", max(activity$steps, na.rm = TRUE)))
 ```
+
+```
+## [1] "Start: 2012-11-27 10:15:00 UTC"
+```
+
+```
+## [1] "End: 2012-11-27 10:19:59 UTC"
+```
+
+```
+## [1] "Max. number of steps: 806"
+```
  
 ## Code to describe and show a strategy for imputing missing data
 
 ###Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
-```{r, echo = TRUE}
+
+```r
 sapply(activity, function(x) sum(is.na(x)))
+```
+
+```
+##    steps     date interval 
+##     2304        0        0
 ```
 So, the total number of rows with NAs is 2304 (all missing values are in the column "steps")  
 
 ###Devising a strategy for filling in all of the missing values in the dataset.
 Out of all unsophisticated strategies we choose here setting up the mean for that 5-minute interval (over all the days) instead of the missing value
-```{r, echo = TRUE}
+
+```r
 activity_summarized <- activity%>%group_by(interval)%>%summarize(MeanSteps = mean(steps, na.rm = TRUE))
 activity_summarized$interval <- as.factor(activity_summarized$interval)
 setkey(activity_summarized, interval)
@@ -112,23 +221,100 @@ for (i in seq(along = activity_completed$interval)) {
 }
 ```
 Compare
-```{r, echo = TRUE}
+
+```r
 activity
+```
+
+```
+##        steps       date interval
+##     1:    NA 2012-10-01        0
+##     2:    NA 2012-10-01        5
+##     3:    NA 2012-10-01       10
+##     4:    NA 2012-10-01       15
+##     5:    NA 2012-10-01       20
+##    ---                          
+## 17564:    NA 2012-11-30     2335
+## 17565:    NA 2012-11-30     2340
+## 17566:    NA 2012-11-30     2345
+## 17567:    NA 2012-11-30     2350
+## 17568:    NA 2012-11-30     2355
+```
+
+```r
 activity_completed
+```
+
+```
+##            steps       date interval
+##     1: 1.7169811 2012-10-01        0
+##     2: 0.3396226 2012-10-01        5
+##     3: 0.1320755 2012-10-01       10
+##     4: 0.1509434 2012-10-01       15
+##     5: 0.0754717 2012-10-01       20
+##    ---                              
+## 17564: 4.6981132 2012-11-30     2335
+## 17565: 3.3018868 2012-11-30     2340
+## 17566: 0.6415094 2012-11-30     2345
+## 17567: 0.2264151 2012-11-30     2350
+## 17568: 1.0754717 2012-11-30     2355
 ```
 
 ## Histogram of the total number of steps taken each day after missing values are imputed
 Computing the summarized statistics over the completed values
-```{r, echo = TRUE}
+
+```r
 activity_summarized <- activity_completed%>%group_by(date)%>%summarize(SumSteps = sum(steps, na.rm = TRUE), MeanSteps = mean(steps, na.rm = TRUE), MedianSteps = median(steps, na.rm = TRUE))
 activity_summarized
+```
+
+```
+## Source: local data table [61 x 4]
+## 
+##          date SumSteps MeanSteps MedianSteps
+##        (date)    (dbl)     (dbl)       (dbl)
+## 1  2012-10-01 10766.19  37.38260    34.11321
+## 2  2012-10-02   126.00   0.43750     0.00000
+## 3  2012-10-03 11352.00  39.41667     0.00000
+## 4  2012-10-04 12116.00  42.06944     0.00000
+## 5  2012-10-05 13294.00  46.15972     0.00000
+## 6  2012-10-06 15420.00  53.54167     0.00000
+## 7  2012-10-07 11015.00  38.24653     0.00000
+## 8  2012-10-08 10766.19  37.38260    34.11321
+## 9  2012-10-09 12811.00  44.48264     0.00000
+## 10 2012-10-10  9900.00  34.37500     0.00000
+## ..        ...      ...       ...         ...
+```
+
+```r
 hist(activity_summarized$SumSteps, main = "Histogram of the total number of steps taken each day\n(NAs substituted with means across an interval)", xlab = "Total steps per day", col = "blue", ylim = c(0,40))  
-```  
+```
+
+<img src="PA1_template_files/figure-html/unnamed-chunk-11-1.png" title="" alt="" width="672" />
 
 Do these values differ from the estimates from the first part of the assignment?
 Anyway!
-```{r, echo = TRUE}
+
+```r
 activity_summarized_before
+```
+
+```
+## Source: local data table [61 x 4]
+## 
+##          date SumSteps MeanSteps MedianSteps
+##        (date)    (dbl)     (dbl)       (dbl)
+## 1  2012-10-01       NA        NA          NA
+## 2  2012-10-02      126   0.43750           0
+## 3  2012-10-03    11352  39.41667           0
+## 4  2012-10-04    12116  42.06944           0
+## 5  2012-10-05    13294  46.15972           0
+## 6  2012-10-06    15420  53.54167           0
+## 7  2012-10-07    11015  38.24653           0
+## 8  2012-10-08       NA        NA          NA
+## 9  2012-10-09    12811  44.48264           0
+## 10 2012-10-10     9900  34.37500           0
+## ..        ...      ...       ...         ...
 ```
   
 <img class=center src=./figure/Total_number_steps_with_NA.png width=672>
@@ -139,7 +325,8 @@ The peak interval of 10000 to 15000 steps per day has been enhanced throug the i
 
 ## Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
 
-```{r, echo = TRUE}
+
+```r
 activity_completed$weekend <- as.factor("weekday")
 #Dont worry, pattern "So" is for german "Sonntag" (Sunday)
 weekendindx <- grep("Su|Sa|So",weekdays(activity_completed$date, abbreviate = TRUE))
@@ -147,3 +334,5 @@ activity_completed[weekendindx]$weekend <- as.factor("weekend")
 library(lattice)
 xyplot(activity_completed$steps ~  seq(along = activity_completed$interval)| activity_completed$weekend, data = activity_completed, type = "l", layout = c(1, 2), lty=1, xlab = "Interval", ylab = "Number of steps")
 ```
+
+<img src="PA1_template_files/figure-html/unnamed-chunk-13-1.png" title="" alt="" width="672" />
