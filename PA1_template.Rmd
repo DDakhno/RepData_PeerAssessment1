@@ -1,7 +1,7 @@
 ---
 title: "Reproducible research : Course Project 1"
 author: "D.Dakhno"
-date: "2. April 2016"
+date: "3. April 2016"
 output: html_document
 ---
 
@@ -64,13 +64,11 @@ dev.off()
 ## Mean and median number of steps taken each day  
 Using the before summarized data print the mean and median number of steps taken each day
 ```{r, echo = TRUE}
+mean(activity_summarized$SumSteps,na.rm = TRUE)
+median(activity_summarized$SumSteps,na.rm = TRUE)
 #For  comparisons in future...
 activity_summarized_before <- copy(activity_summarized)
-activity_summarized$SumSteps <- NULL
-activity_summarized
 ```
-A lot of strange "0" as median values for the number of steps compared to the non-null means suggest, more than the half of time intervals were lazy.
-
 ##Time series plot of the average number of steps taken or What is the average daily activity pattern?
 ```{r, echo = TRUE}
 activity_summarized_interval <- aggregate(steps ~ interval, activity, mean)    
@@ -94,24 +92,30 @@ sapply(activity, function(x) sum(is.na(x)))
 So, the total number of rows with NAs is 2304 (all missing values are in the column "steps")  
 
 ###Devising a strategy for filling in all of the missing values in the dataset.
-Out of all unsophisticated strategies we choose here setting up the mean for that 5-minute interval (over all the days) instead of the missing value
+Out of all unsophisticated strategies we choose here setting up the mean for the same 5-minute interval (over all the days) instead of the missing value
 ```{r, echo = TRUE}
-activity_summarized <- activity%>%group_by(interval)%>%summarize(MeanSteps = mean(steps, na.rm = TRUE))
-activity_summarized$interval <- as.factor(activity_summarized$interval)
-setkey(activity_summarized, interval)
 #NB! Data tables are approached by reference, so copy() here to preserve the original data
 activity_completed <- copy(activity)
+#Calculating the mean values per interval, indexing (setkey)
+activity_summarized <- aggregate(steps ~ interval, activity_completed, mean)
+colnames(activity_summarized) <- c("interval","steps")
+activity_summarized <- as.data.table(activity_summarized)
+activity_summarized$interval <- as.factor(activity_summarized$interval)
+setkey(activity_summarized,interval)
 
-for (i in seq(along = activity_completed$interval)) {
+#Setting the appropriate mean values at the place of NAs
+for (i in seq(along = activity_completed$steps)) {
     if (is.na(activity_completed[i,]$steps)) {
-        activity_completed[i,]$steps <- activity_summarized[as.character(activity_completed[i,]$interval)]$MeanSteps
+        intrv <- as.character(activity_completed[i,]$interval)
+        activity_completed[i,]$steps <- activity_summarized[as.character(intrv)]$steps
     }
 }
 ```
 Compare
 ```{r, echo = TRUE}
-activity
-activity_completed
+identical(activity,activity_completed)
+summary(activity)
+summary(activity_completed)
 ```
 
 ## Histogram of the total number of steps taken each day after missing values are imputed
@@ -124,15 +128,24 @@ hist(activity_summarized$SumSteps, main = "Total number of steps taken each day\
 
 Do these values differ from the estimates from the first part of the assignment?
 Anyway!
+
 ```{r, echo = TRUE}
-activity_summarized_before
+summary(activity_summarized_before)
+summary(activity_summarized)
 ```
   
-<img class=center src=./figure/Total_number_steps_with_NA.png width=672>
 
 ##What is the impact of imputing missing data on the estimates of the total daily number of steps?
 
-The peak interval of 10000 to 15000 steps per day has been enhanced through the imputing missing data.
+
+```{r, echo = TRUE}
+    par(mfrow=c(1,2))
+    hist(activity_summarized_before$SumSteps, main = "Total number of steps taken each day\n(NAs not treated)", xlab = "Total steps per day", col = "blue", ylim = c(0,40))
+    hist(activity_summarized$SumSteps, main = "Total number of steps\n(NAs substituted)", xlab = "Total steps per day", col = "blue", ylim = c(0,40))
+```
+
+
+Visually, the peak interval of 10000 to 15000 steps per day has been enhanced through the imputing missing data.
 
 ## Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
 
