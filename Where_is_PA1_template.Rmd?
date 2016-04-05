@@ -4,14 +4,18 @@
 #Created by D.Dakhno
 #######################################################################
 
-Due to version incompatibility of R Markdown v2 the files commited (.Rmd, .md., .html) had to be processed and generated in a way, different from that proposed in assignment (so, not with knit2html(), but either within of RStudio or with rmarkdown::render(..., clear = FALSE)).
+Due to version incompatibility of R Markdown v2 the files commited (.Rmd, .md., .html) had to be processed and generated in a way, 
+different from that proposed in assignment (so, not with knit2html(), but either within of RStudio or with 
+rmarkdown::render(..., clear = FALSE)).
 -----------------------------------------------------------------------------------------------------------------------------------
 knit2html("PA1_template.Rmd")
 Error in knit2html("PA1_template.Rmd") : 
-  It seems you should call rmarkdown::render() instead of knitr::knit2html() because PA1_template.Rmd appears to be an R Markdown v2 document.
+  It seems you should call rmarkdown::render() instead of knitr::knit2html() because PA1_template.Rmd appears to be 
+  an R Markdown v2 document.
 -----------------------------------------------------------------------------------------------------------------------------------
 
 My configuration:
+
 Windows 7 Home
 RStudio(Version 0.99.491)
 R (version 3.2.3) leaves 
@@ -19,7 +23,9 @@ knitr  Version 1.12.3
 
 My RStudio retains no intermediate .md-file after generating the html-version.
 
-To meet the requirements of the assignment I included both versions of each generated file. Here the way to distinguisch them:
+To meet the requirements of the assignment I included both versions of each generated file (render() and RStudio). 
+
+Here the tips to distinguisch them:
 -----------------------------------------------------------------------
 File                      |       Origin
 -----------------------------------------------------------------------
