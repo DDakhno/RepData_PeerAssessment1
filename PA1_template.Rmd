@@ -158,6 +158,8 @@ activity_summarized <- aggregate(activity_completed$steps, by = list(activity_co
 
 library(lattice)
 xyplot(x ~  Group.2| Group.1, data = activity_summarized, type = "l", layout = c(1, 2), lty=1, xlab = "Interval", ylab = "Number of steps")
+
+#NB! It seems, the GitHub doesn't show the panels at this place. Locally my RStudio can generate it. So. fetch and try it by You!
 ```    
   
 The daily pattern on weekends looks more uniform than  on weekdays (definite  morning peaks).
